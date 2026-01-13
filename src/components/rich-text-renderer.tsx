@@ -31,7 +31,19 @@ function LoadEditorStatePlugin({ editorState }: { editorState: string }) {
   useEffect(() => {
     if (editorState) {
       try {
-        const state = editor.parseEditorState(editorState);
+        let state;
+        try {
+          // Attempt to parse the state directly
+          state = editor.parseEditorState(editorState);
+        } catch {
+          // If parsing fails, try decoding HTML entities (e.g. &quot; -> ")
+          // This handles cases where the backend returns HTML-encoded JSON
+          const parser = new DOMParser();
+          const decoded =
+            parser.parseFromString(editorState, "text/html").documentElement
+              .textContent || "";
+          state = editor.parseEditorState(decoded);
+        }
         editor.setEditorState(state);
       } catch (error) {
         console.error("Failed to parse editor state:", error);
@@ -105,10 +117,7 @@ export function RichTextRenderer({
       <RichTextPlugin
         contentEditable={
           <ContentEditable
-            className={cn(
-              "text-muted-foreground focus:outline-none",
-              className
-            )}
+            className={cn("text-foreground focus:outline-none", className)}
           />
         }
         placeholder={null}

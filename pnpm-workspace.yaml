@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
   - '@swc/core'
+  - msw
   - sharp
   - unrs-resolver
